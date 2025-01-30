@@ -7,8 +7,10 @@ export default function App() {
   return (
     <View style={styles.container}>
       <ShoppingListItem name="Coffee" />
-      <ShoppingListItem name="Milk" />
-      <ShoppingListItem name="Bread" />
+      <ShoppingListItem name="Milk" isCompleted />
+      <ShoppingListItem name="Bread" isCompleted />
+      <ShoppingListItem name="Eggs" />
+      <ShoppingListItem name="Bananas" />
 
       <StatusBar style="auto" />
     </View>
