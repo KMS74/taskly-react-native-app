@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView, StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput, FlatList, View, Text } from 'react-native';
 import ShoppingListItem from '../components/ShoppingListItem';
 import { theme } from '../theme';
 
@@ -9,24 +8,8 @@ type ShoppingListItemType = {
   name: string;
 };
 
-const initialList: ShoppingListItemType[] = [
-  {
-    id: '1',
-    name: 'Coffee',
-  },
-  {
-    id: '2',
-    name: 'Milk',
-  },
-  {
-    id: '3',
-    name: 'Tea',
-  },
-];
-
 export default function App() {
-  const [shoppingList, setShoppingList] =
-    useState<ShoppingListItemType[]>(initialList);
+  const [shoppingList, setShoppingList] = useState<ShoppingListItemType[]>([]);
 
   const [value, setValue] = useState('');
 
@@ -41,26 +24,26 @@ export default function App() {
   };
 
   return (
-    <ScrollView
+    <FlatList
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
       stickyHeaderIndices={[0]}
-    >
-      <TextInput
-        style={styles.textInput}
-        placeholder="Add an item"
-        value={value}
-        onChangeText={setValue}
-        returnKeyType="done"
-        onSubmitEditing={handleAddItem}
-      />
-
-      {shoppingList.map((item) => (
-        <ShoppingListItem key={item.id} name={item.name} />
-      ))}
-
-      <StatusBar style="auto" />
-    </ScrollView>
+      data={shoppingList}
+      renderItem={({ item }) => <ShoppingListItem name={item.name} />}
+      ListEmptyComponent={
+        <View style={styles.listEmptyContainer}>
+          <Text>Your shopping list is empty</Text>
+        </View>
+      }
+      ListHeaderComponent={
+        <TextInput
+          style={styles.textInput}
+          placeholder="Add item"
+          value={value}
+          onChangeText={setValue}
+          onSubmitEditing={handleAddItem}
+        />
+      }
+    />
   );
 }
 
@@ -68,19 +51,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colorWhite,
-    justifyContent: 'center',
     padding: 12,
-  },
-  contentContainer: {
-    paddingBottom: 24,
   },
   textInput: {
     backgroundColor: theme.colorWhite,
     borderColor: theme.colorLightGrey,
     borderWidth: 2,
     padding: 12,
-    marginHorizontal: 12,
+    marginBottom: 8,
+    marginHorizontal: 4,
     borderRadius: 50,
     fontSize: 18,
+  },
+  listEmptyContainer: {
+    marginVertical: 18,
+    alignItems: 'center',
   },
 });
