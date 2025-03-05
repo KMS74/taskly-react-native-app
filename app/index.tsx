@@ -6,6 +6,7 @@ import { theme } from '../theme';
 type ShoppingListItemType = {
   id: string;
   name: string;
+  isCompleted: boolean;
 };
 
 export default function App() {
@@ -16,11 +17,23 @@ export default function App() {
   const handleAddItem = () => {
     if (value) {
       setShoppingList((prev) => [
+        { id: new Date().toTimeString(), name: value, isCompleted: false },
         ...prev,
-        { id: new Date().toTimeString(), name: value },
       ]);
       setValue('');
     }
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setShoppingList((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleToggleComplete = (id: string) => {
+    setShoppingList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, isCompleted: !item.isCompleted } : item,
+      ),
+    );
   };
 
   return (
@@ -28,7 +41,14 @@ export default function App() {
       style={styles.container}
       stickyHeaderIndices={[0]}
       data={shoppingList}
-      renderItem={({ item }) => <ShoppingListItem name={item.name} />}
+      renderItem={({ item }) => (
+        <ShoppingListItem
+          name={item.name}
+          onDelete={() => handleDeleteItem(item.id)}
+          isCompleted={item.isCompleted}
+          onToggleComplete={() => handleToggleComplete(item.id)}
+        />
+      )}
       ListEmptyComponent={
         <View style={styles.listEmptyContainer}>
           <Text>Your shopping list is empty</Text>
