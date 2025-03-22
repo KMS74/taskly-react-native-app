@@ -36,19 +36,22 @@ export default function App() {
     );
   };
 
+  const renderItem = ({ item }: { item: ShoppingListItemType }) => (
+    <ShoppingListItem
+      name={item.name}
+      isCompleted={item.isCompleted}
+      onDelete={() => handleDeleteItem(item.id)}
+      onToggleComplete={() => handleToggleComplete(item.id)}
+    />
+  );
+
   return (
     <FlatList
       style={styles.container}
       stickyHeaderIndices={[0]}
       data={shoppingList}
-      renderItem={({ item }) => (
-        <ShoppingListItem
-          name={item.name}
-          onDelete={() => handleDeleteItem(item.id)}
-          isCompleted={item.isCompleted}
-          onToggleComplete={() => handleToggleComplete(item.id)}
-        />
-      )}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id}
       ListEmptyComponent={
         <View style={styles.listEmptyContainer}>
           <Text>Your shopping list is empty</Text>
