@@ -6,7 +6,7 @@ import { theme } from '../theme';
 type ShoppingListItemType = {
   id: string;
   name: string;
-  isCompleted: boolean;
+  completedAtTimestamp?: number;
 };
 
 export default function App() {
@@ -29,17 +29,24 @@ export default function App() {
   };
 
   const handleToggleComplete = (id: string) => {
-    setShoppingList((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isCompleted: !item.isCompleted } : item,
-      ),
-    );
+    const newShoppingList = shoppingList.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          completedAtTimestamp: item?.completedAtTimestamp
+            ? undefined
+            : Date.now(),
+        };
+      }
+      return item;
+    });
+    setShoppingList(newShoppingList);
   };
 
   const renderItem = ({ item }: { item: ShoppingListItemType }) => (
     <ShoppingListItem
       name={item.name}
-      isCompleted={item.isCompleted}
+      isCompleted={!!item.completedAtTimestamp}
       onDelete={() => handleDeleteItem(item.id)}
       onToggleComplete={() => handleToggleComplete(item.id)}
     />
