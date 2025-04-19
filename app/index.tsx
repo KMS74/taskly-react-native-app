@@ -1,39 +1,46 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, TextInput, FlatList, View, Text } from 'react-native';
 import ShoppingListItem from '../components/ShoppingListItem';
 import { theme } from '../theme';
+import { getFromStorage, saveToStorage } from '../utils/storage';
 
-type ShoppingListItemType = {
+export type ShoppingListItemType = {
   id: string;
   name: string;
   completedAtTimestamp?: number;
   lastUpdatedTimestamp: number;
 };
 
+const STORAGE_KEY = 'shopping-cart';
+
 export default function App() {
   const [shoppingList, setShoppingList] = useState<ShoppingListItemType[]>([]);
 
   const [value, setValue] = useState('');
 
-  const handleAddItem = () => {
+  const handleAddItem = async () => {
     if (value) {
-      setShoppingList((prev) => [
+      const newShoppingList = [
         {
           id: new Date().toTimeString(),
           name: value,
           lastUpdatedTimestamp: Date.now(),
         },
-        ...prev,
-      ]);
+        ...shoppingList,
+      ];
+      setShoppingList(newShoppingList);
       setValue('');
+      await saveToStorage(STORAGE_KEY, newShoppingList);
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    setShoppingList((prev) => prev.filter((item) => item.id !== id));
+  const handleDeleteItem = async (id: string) => {
+    const newShoppingList = shoppingList.filter((item) => item.id !== id);
+    setShoppingList(newShoppingList);
+    await saveToStorage(STORAGE_KEY, newShoppingList);
   };
 
-  const handleToggleComplete = (id: string) => {
+  const handleToggleComplete = async (id: string) => {
     const newShoppingList = shoppingList.map((item) => {
       if (item.id === id) {
         return {
@@ -47,10 +54,11 @@ export default function App() {
       return item;
     });
     setShoppingList(newShoppingList);
+    await saveToStorage(STORAGE_KEY, newShoppingList);
   };
 
-  function orderShoppingList(shoppingList: ShoppingListItemType[]) {
-    return shoppingList.sort((item1, item2) => {
+  const orderShoppingList = (shoppingList: ShoppingListItemType[]) => {
+    return shoppingList?.sort((item1, item2) => {
       if (item1.completedAtTimestamp && item2.completedAtTimestamp) {
         return item2.completedAtTimestamp - item1.completedAtTimestamp;
       }
@@ -69,7 +77,7 @@ export default function App() {
 
       return 0;
     });
-  }
+  };
 
   const renderItem = ({ item }: { item: ShoppingListItemType }) => (
     <ShoppingListItem
@@ -79,6 +87,14 @@ export default function App() {
       onToggleComplete={() => handleToggleComplete(item.id)}
     />
   );
+
+  useEffect(() => {
+    const fetchShoppingCartData = async () => {
+      const data = await getFromStorage(STORAGE_KEY);
+      setShoppingList(data);
+    };
+    fetchShoppingCartData();
+  }, []);
 
   return (
     <FlatList
