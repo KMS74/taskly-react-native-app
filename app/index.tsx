@@ -7,6 +7,7 @@ type ShoppingListItemType = {
   id: string;
   name: string;
   completedAtTimestamp?: number;
+  lastUpdatedTimestamp: number;
 };
 
 export default function App() {
@@ -17,7 +18,11 @@ export default function App() {
   const handleAddItem = () => {
     if (value) {
       setShoppingList((prev) => [
-        { id: new Date().toTimeString(), name: value, isCompleted: false },
+        {
+          id: new Date().toTimeString(),
+          name: value,
+          lastUpdatedTimestamp: Date.now(),
+        },
         ...prev,
       ]);
       setValue('');
@@ -33,6 +38,7 @@ export default function App() {
       if (item.id === id) {
         return {
           ...item,
+          lastUpdatedTimestamp: Date.now(),
           completedAtTimestamp: item?.completedAtTimestamp
             ? undefined
             : Date.now(),
@@ -42,6 +48,28 @@ export default function App() {
     });
     setShoppingList(newShoppingList);
   };
+
+  function orderShoppingList(shoppingList: ShoppingListItemType[]) {
+    return shoppingList.sort((item1, item2) => {
+      if (item1.completedAtTimestamp && item2.completedAtTimestamp) {
+        return item2.completedAtTimestamp - item1.completedAtTimestamp;
+      }
+
+      if (item1.completedAtTimestamp && !item2.completedAtTimestamp) {
+        return 1;
+      }
+
+      if (!item1.completedAtTimestamp && item2.completedAtTimestamp) {
+        return -1;
+      }
+
+      if (!item1.completedAtTimestamp && !item2.completedAtTimestamp) {
+        return item2.lastUpdatedTimestamp - item1.lastUpdatedTimestamp;
+      }
+
+      return 0;
+    });
+  }
 
   const renderItem = ({ item }: { item: ShoppingListItemType }) => (
     <ShoppingListItem
@@ -56,7 +84,7 @@ export default function App() {
     <FlatList
       style={styles.container}
       stickyHeaderIndices={[0]}
-      data={shoppingList}
+      data={orderShoppingList(shoppingList)}
       renderItem={renderItem}
       keyExtractor={(item) => item.id}
       ListEmptyComponent={
